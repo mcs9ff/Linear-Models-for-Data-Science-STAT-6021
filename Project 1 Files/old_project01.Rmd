@@ -1,0 +1,192 @@
+---
+title: "STAT6021 Linear Models for Data Science - Project 01"
+author: 
+ - Tyler Hinnendael (dcc7qe@virginia.edu) 
+ - Shrikant Mishra (stm5ne@virginia.edu)
+ - Matt Scheffel (mcs9ff@virginia.edu)
+ - Rex Minnis (rlm4cr@virginia.edu)
+date: "2022-10-16"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(MASS)
+library(corrplot)
+```
+
+## Section 1
+## Executive Summary
+
+### Load diamonds4.csv dataset
+
+```{r}
+Data <- read.csv("../data/diamonds4.csv", header=TRUE)
+head(Data)
+```
+
+## Section 2
+##  Description of the data and the variables
+
+
+## Question 1 - Data Visualizations
+
+### 1 Use data visualizations to explore how price is related to the other 
+### variables (carat, clarity, color, cut), as well as how the other variables 
+### may relate to each other. Address the various claims on the 
+### [diamond education page on Blue Nile](https://www.bluenile.com/education/diamonds).
+
+```{r}
+ggplot(Data, aes (carat))+
+  geom_bar()+
+  scale_x_binned()
+
+```
+
+```{r}
+ggplot(Data, aes (clarity))+
+  geom_bar()
+```
+
+```{r}
+ggplot(Data, aes (color))+
+  geom_bar()
+```
+
+```{r}
+ggplot(Data, aes (cut))+
+  geom_bar()
+```
+
+```{r}
+ggplot(Data, aes(x = carat, y = price))+
+  geom_point()+
+  geom_smooth(method = "lm", se=FALSE)+
+  labs(y="Price", 
+       x="Carat", 
+       title="Scatterplot of Diamond Price Against Carat")
+```
+
+```{r}
+ggplot(Data, aes(x = clarity, y = price))+
+  geom_point()+
+  geom_smooth(method = "lm", se=FALSE)+
+  labs(y="Price", 
+       x="Carat", 
+       title="Scatterplot of Diamond Price Against Cut")
+```
+
+```{r}
+ggplot(Data, aes(x = color, y = price))+
+  geom_point()+
+  geom_smooth(method = "lm", se=FALSE)+
+  labs(y="Price", 
+       x="Carat", 
+       title="Scatterplot of Diamond Price Against Cut")
+```
+
+```{r}
+ggplot(Data, aes(x = cut, y = price))+
+  geom_point()+
+  geom_smooth(method = "lm", se=FALSE)+
+  labs(y="Price", 
+       x="Carat", 
+       title="Scatterplot of Diamond Price Against Cut")
+```
+
+
+```{r}
+ggplot(Data, aes(x=carat, y=price))+
+     geom_boxplot(fill="Blue")+
+     labs(x="Cut", y="Price",
+      title="Distribution of Diamond Prices by Carat")
+```
+
+
+```{r}
+ggplot(Data, aes(x=clarity, y=price))+
+     geom_boxplot(fill="Blue")+
+     labs(x="Cut", y="Price",
+      title="Distribution of Diamond Prices by Clarity")
+```
+
+
+```{r}
+ggplot(Data, aes(x=color, y=price_logtf))+
+     geom_boxplot(fill="Blue")+
+     labs(x="Color", y="Price",
+      title="Distribution of Diamond Prices by Color")
+```
+
+
+
+```{r}
+ggplot(Data, aes(x=cut, y=price_logtf))+
+     geom_boxplot(fill="Blue")+
+     labs(x="Cut", y="Price",
+      title="Distribution of Diamond Prices by Cut")
+```
+
+```{r}
+#Data[c("carat", "price")]
+num_cols_Data <- Data %>%
+                   dplyr::select(carat, price)
+                  
+
+cor(num_cols_Data)
+
+```
+
+
+
+
+```{r}
+ggplot(Data, aes(x=carat, y=price))+
+   geom_violin()
+```
+
+
+```{r}
+ggplot(Data, aes(x=clarity, y=price_logtf))+
+   geom_violin()
+```
+
+
+```{r}
+#ggplot(Data, aes(x=color, y=price))+
+#   geom_violin()
+   #+
+   #stat_summary(fun.data = "mean_cl_boot", geom = "crossbar",
+   #             colour = "red", width = 0.2)
+```
+
+```{r}
+ggplot(Data, aes(x=cut, y=price))+
+   geom_violin()
+```
+
+
+```{r}
+Data$price_logtf <- log(Data$price)
+```
+
+
+```{r}
+
+```
+
+## Section  3
+
+### A description of how you fitted the regression of price against carat, and 
+### the conclusions reached.
+
+### Question 2. Fit an appropriate simple linear regression for price against carat.
+
+
+
+
+
+
+
+

@@ -1,0 +1,89 @@
+require(installr)
+q()
+q()
+?cor
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(MASS)
+library(corrplot)
+Data <- read.csv("../data/diamonds4.csv", header=TRUE)
+head(Data)
+ggplot(Data, aes (carat))+
+geom_bar()+
+scale_x_binned()
+ggplot(Data, aes (clarity))+
+geom_bar()
+ggplot(Data, aes (color))+
+geom_bar()
+ggplot(Data, aes (cut))+
+geom_bar()
+ggplot(Data, aes(x = carat, y = price))+
+geom_point()+
+geom_smooth(method = "lm", se=FALSE)+
+labs(y="Price",
+x="Carat",
+title="Scatterplot of Diamond Price Against Carat")
+ggplot(Data, aes(x = clarity, y = price))+
+geom_point()+
+geom_smooth(method = "lm", se=FALSE)+
+labs(y="Price",
+x="Carat",
+title="Scatterplot of Diamond Price Against Cut")
+ggplot(Data, aes(x = color, y = price))+
+geom_point()+
+geom_smooth(method = "lm", se=FALSE)+
+labs(y="Price",
+x="Carat",
+title="Scatterplot of Diamond Price Against Cut")
+ggplot(Data, aes(x = cut, y = price))+
+geom_point()+
+geom_smooth(method = "lm", se=FALSE)+
+labs(y="Price",
+x="Carat",
+title="Scatterplot of Diamond Price Against Cut")
+ggplot(Data, aes(x=carat, y=price))+
+geom_boxplot(fill="Blue")+
+labs(x="Cut", y="Price",
+title="Distribution of Diamond Prices by Carat")
+ggplot(Data, aes(x=clarity, y=price))+
+geom_boxplot(fill="Blue")+
+labs(x="Cut", y="Price",
+title="Distribution of Diamond Prices by Clarity")
+ggplot(Data, aes(x=color, y=price))+
+geom_boxplot(fill="Blue")+
+labs(x="Cut", y="Price",
+title="Distribution of Diamond Prices by Color")
+ggplot(Data, aes(x=cut, y=price))+
+geom_boxplot(fill="Blue")+
+labs(x="Cut", y="Price",
+title="Distribution of Diamond Prices by Cut")
+#Data[c("carat", "price")]
+num_cols_Data <- Data %>%
+dplyr::select(carat, price)
+cor(num_cols_Data)
+ggplot(Data, aes(x=carat, y=price))+
+geom_violin()
+ggplot(Data, aes(x=clarity, y=price))+
+geom_violin()
+ggplot(Data, aes(x=color, y=price))+
+geom_violin()
+ggplot(Data, aes(x=cut, y=price))+
+geom_violin()
+Data$price_logtf <- log(Data$price)
+ggplot(Data, aes(x=color, y=price_logtf))+
+geom_violin()
+ggplot(Data, aes(x=cut, y=price_logtf))+
+geom_violin()
+ggplot(Data, aes(x=color, y=price_logtf))+
+geom_violin()+
+stat_summary(fun = "mean",
+geom = "point",
+color = "red")
+ggplot(Data, aes(x=color, y=price_logtf))+
+geom_violin()+
+stat_summary(fun.data = "mean_cl_boot", geom = "crossbar",
+colour = "red", width = 0.2)
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(MASS)
+library(corrplot)

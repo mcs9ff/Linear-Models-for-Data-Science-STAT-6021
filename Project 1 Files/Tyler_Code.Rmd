@@ -1,0 +1,315 @@
+---
+title: "Project 1"
+author: "Tyler Hinnendael"
+date: "2022-10-06"
+output: html_document
+---
+
+# Question 1
+
+-- to be filled out in the high-level report.
+
+# Question 2
+Prompt:
+a) A description of the data and the variables
+  -- created a variable "price per carat", to combine these two features so the visualizations 
+  take into account the 'weight' of the diamond size in the price.
+b) the data visualizations you created to address how price is related to the other variables
+  -- violin plot to show distribution of mean-price against each feature
+  -- bar chart with mean price trends for each category/sub-category
+  -- bar plot to show mean-price trends for each combination of the 3 categorical variables
+  -- could not do a correlation matrix because 3 of the variables are not numeric
+c) the claims made on the diamond education page. 
+  -- " Cut is considered the most important of the four C's. Color is the second most important of the 4Cs." 
+  -> Color appears to be the most consistent feature across all observations. Cut and clarity have some influential
+  observations and categories (flawless clarity). Cut does not appear to be the most important feature.
+d) Provide contextual commentary on the visualizations.
+
+```{r}
+## reads in the diamonds4.csv file
+diamonds<-read.csv("diamonds4.csv", header=TRUE)
+```
+```{r}
+# created 'price per carat" to normalize based on a wide range of carat sizes
+vec<- (diamonds$price / diamonds$carat)
+diamonds["price_per_carat"]<-vec
+```
+
+```{r}
+library(ggplot2)
+vars<- c("cut", "price", "price_per_carat")
+dia_cut<-diamonds[vars]
+#ggplot(pol1, aes(raceethnicity)) + geom_bar()
+```
+
+# (Question 2) - bar charts of mean_price and cut, color, and clarity
+
+```{r}
+cut_mean<-aggregate(diamonds$price_per_carat, list(diamonds$cut), FUN=mean)
+cols <- c("Cut", "Mean_Price")
+colnames(cut_mean) <- cols
+cut_mean$Cut<- factor(cut_mean$Cut, levels=c("Astor Ideal", "Ideal", "Very Good", "Good"))
+ggplot(cut_mean, aes(x=Cut, y=Mean_Price)) + geom_bar(stat = "identity", fill = "coral", alpha = 0.5) 
+```
+
+```{r}
+color_mean<-aggregate(diamonds$price_per_carat, list(diamonds$color), FUN=mean)
+cols <- c("Color", "Mean_Price")
+colnames(color_mean) <- cols
+ggplot(color_mean, aes(x=reorder(Color, -Mean_Price), y=Mean_Price)) + geom_bar(stat = "identity", fill = "coral", alpha = 0.5) 
+```
+
+```{r}
+clarity_mean<-aggregate(diamonds$price_per_carat, list(diamonds$clarity), FUN=mean)
+cols <- c("Clarity", "Mean_Price")
+colnames(clarity_mean) <- cols
+clarity_mean$Clarity<- factor(clarity_mean$Clarity, levels=c("FL", "IF", "VVS1", "VVS2", "VS1", "VS2", "SI1", "SI2"))
+ggplot(clarity_mean, aes(x=Clarity, y=Mean_Price)) + geom_bar(stat = "identity", fill = "coral", alpha = 0.5) 
+```
+
+```{r}
+clarity_mean$Clarity<- factor(clarity_mean$Clarity, levels=c("FL", "IF", "VVS1", "VVS2", "VS1", "VS2", "SI1", "SI2"))
+```
+
+```{r}
+library(MASS)
+library(reshape)
+library(reshape2)
+var_means<-aggregate(diamonds$price_per_carat, list(diamonds$cut, diamonds$color, diamonds$clarity), FUN=mean)
+cols <- c("Cut", "Color", "Clarity", "Mean_Price")
+colnames(var_means) <- cols
+var_means$Clarity<- factor(var_means$Clarity, levels=c("FL", "IF", "VVS1", "VVS2", "VS1", "VS2", "SI1", "SI2"))
+var_means$Cut<- factor(var_means$Cut, levels=c("Astor Ideal", "Ideal", "Very Good", "Good"))
+```
+
+# (Question 2) - ggplots showing trends in mean-price per carat with combinations of the 3 categorical C's
+
+```{r}
+p<-ggplot(var_means, aes(x=Color, y=Mean_Price, fill=Cut)) +
+  geom_bar(position="dodge", stat = "identity") +
+  scale_fill_brewer(palette = 7, direction = -1) +
+  scale_colour_brewer(palette = 1)
+p+theme_dark()
+```
+```{r}
+p<-ggplot(var_means, aes(x=Color, y=Mean_Price, fill=Clarity)) +
+  geom_bar(position="dodge", stat = "identity") +
+  scale_fill_brewer(palette = 7, direction = -1) +
+  scale_colour_brewer(palette = 1)
+p+theme_dark()
+```
+
+
+```{r}
+p<-ggplot(var_means, aes(x=Cut, y=Mean_Price, fill=Clarity)) +
+  geom_bar(position="dodge", stat = "identity") +
+  scale_fill_brewer(palette = 7, direction = -1) +
+  scale_colour_brewer(palette = 1)
+p+theme_dark()
+```
+```{r}
+diamonds$clarity<- factor(diamonds$clarity, levels=c("FL", "IF", "VVS1", "VVS2", "VS1", "VS2", "SI1", "SI2"))
+diamonds$cut<- factor(diamonds$cut, levels=c("Astor Ideal", "Ideal", "Very Good", "Good"))
+```
+
+# (Question 2) - boxplots and violin plots depict the distribution of price per carat for the 3 categorical 'C' features.
+
+```{r}
+par(mfrow=c(1,3))
+
+ggplot(diamonds, aes(x=cut, y=price_per_carat, fill=cut)) +
+  geom_boxplot() +
+  geom_jitter(width=0.1, alpha=0.5) +
+  scale_fill_brewer(palette="Blues", direction=-1)
+
+ggplot(diamonds, aes(x=color, y=price_per_carat, fill=color)) +
+  geom_boxplot() +
+  geom_jitter(width=0.1, alpha=0.5) +
+  scale_fill_brewer(palette="Blues", direction=-1)
+
+ggplot(diamonds, aes(x=clarity, y=price_per_carat, fill=clarity)) +
+  geom_boxplot() +
+  geom_jitter(width=0.1, alpha=0.5) +
+  scale_fill_brewer(palette="Blues", direction=-1)
+```
+
+```{r}
+par(mfrow=c(1,3))
+
+ggplot(diamonds, aes(x=cut, y=price_per_carat, fill=cut)) +
+  geom_violin() +
+  geom_jitter(width=0, alpha=0.5) +
+  scale_fill_brewer(palette="Blues", direction=-1)
+
+ggplot(diamonds, aes(x=color, y=price_per_carat, fill=color)) +
+  geom_violin() +
+  geom_jitter(width=0, alpha=0.5) +
+  scale_fill_brewer(palette="Blues", direction=-1)
+
+ggplot(diamonds, aes(x=clarity, y=price_per_carat, fill=clarity)) +
+  geom_violin() +
+  geom_jitter(width=0, alpha=0.5) +
+  scale_fill_brewer(palette="Blues", direction=-1)
+```
+```{r}
+#var_means[var_means$Group.2 != "I" & var_means$Group.2 != "J" & var_means$Group.3 != "SI1" & var_means$Group.3 != "SI2" ,]
+```
+
+
+# Question 3
+
+Prompt: "A description of how you fitted the regression of price against carat, and the conclusions
+reached. If possible, be sure to provide some contextual commentary on the linear
+regression equation that you propose."
+
+**(a)** Exploring the relationship between price and carat with a scatter plot.
+
+```{r}
+ggplot(diamonds, aes(x=carat, y=price))+
+  geom_point()+
+  labs(x="nsize of the diamond (carats)", y="price (dollars)",
+       title="Scatterplot of Price against Size in Carats")
+```
+**(b)** Running linear regression and assessments on residuals and possible transformations
+
+```{r}
+linear_result<-lm(price~carat, data=diamonds)
+summary(linear_result)
+
+yhat<-linear_result$fitted.values
+res<-linear_result$residuals
+diamonds<-data.frame(diamonds, yhat, res)
+ggplot(diamonds, aes(x=yhat, y=res))+
+  geom_point()+
+  geom_hline(yintercept=0, color="red") + 
+  labs(x="Fitted y", 
+       y="Residuals",
+       title="Residual Plot")
+
+library(MASS)
+boxcox(linear_result, lambda = seq(-6, 6, 1))
+```
+**(c)** Running linear regression and assessments on residuals and possible transformations
+
+TRANSFORMING X
+
+```{r}
+# transforms xstar by raising it to the power of 10
+xstar<-(log(diamonds$carat))
+diamonds<-data.frame(diamonds, xstar)
+
+# fits the new regression model with xstar and price
+result.xstar<-lm(price~xstar, data=diamonds)
+
+# finds the fitted and residual values for the new model. Adds them to the data frame.
+yhat2<-result.xstar$fitted.values
+res2<-result.xstar$residuals
+diamonds<-data.frame(diamonds, yhat2, res2)
+```
+```{r}
+#scatterplot with price and xstar
+ggplot(diamonds, aes(x=xstar, y=price))+
+  geom_point()+
+  labs(x="xstar (carat^10)", y="price",
+       title="Scatterplot")
+
+# residual plot with price and xstar
+ggplot(diamonds, aes(x=yhat2, y=res2))+
+  geom_point()+
+  geom_hline(yintercept = 0, color="red")+
+  labs(x="Fitted y",
+       y="Residuals",
+       title="Residual Plot with price and xstar")
+
+# new box cox plot to check if the assumptions are met.
+boxcox(result.xstar, lambda = seq(-40, 40, 1))
+
+# ACF Plot
+acf(res2, main="ACF Plot of Residuals with ystar")
+
+# qq plot
+qqnorm(res2)
+qqline(res2, col="red")
+```
+```{r}
+result.xstar
+```
+
+
+TRANSFORMING Y
+
+```{r}
+# transforms ystar 
+ystar<-(log(diamonds$price))
+diamonds<-data.frame(diamonds, ystar)
+
+# fits the new regression model with ystar
+result.ystar<-lm(ystar~xstar, data=diamonds)
+
+# finds the fitted and residual values for the new model. Adds them to the data frame.
+yhat3<-result.ystar$fitted.values
+res3<-result.ystar$residuals
+diamonds<-data.frame(diamonds, yhat3, res3)
+```
+
+```{r}
+#scatterplot with ystar and xstar
+ggplot(diamonds, aes(x=xstar, y=ystar))+
+  geom_point()+
+  labs(x="xstar", y="ystar",
+       title="Scatterplot")
+
+# residual plot with ystar and xstar
+ggplot(diamonds, aes(x=yhat3, y=res3))+
+  geom_point()+
+  geom_hline(yintercept = 0, color="red")+
+  labs(x="Fitted y",
+       y="Residuals",
+       title="Residual Plot with ystar and xstar")
+
+# new box cox plot to check if the assumptions are met.
+boxcox(result.ystar, lambda = seq(-40, 40, 1))
+
+# ACF Plot
+acf(res3, main="ACF Plot of Residuals with ystar")
+
+# qq plot
+qqnorm(res3)
+qqline(res3, col="red")
+```
+
+```{r}
+# fits the new regression model with ystar
+result.xstar_only<-lm(ystar~carat, data=diamonds)
+
+# finds the fitted and residual values for the new model. Adds them to the data frame.
+yhat4<-result.xstar_only$fitted.values
+res4<-result.xstar_only$residuals
+diamonds<-data.frame(diamonds, yhat4, res4)
+```
+
+```{r}
+####scatterplot with ystar and xstar
+ggplot(diamonds, aes(x=carat, y=ystar))+
+  geom_point()+
+  labs(x="carat", y="ystar",
+       title="Scatterplot")
+
+#### residual plot with ystar and xstar
+ggplot(diamonds, aes(x=yhat4, y=res4))+
+  geom_point()+
+  geom_hline(yintercept = 0, color="red")+
+  labs(x="Fitted y",
+       y="Residuals",
+       title="Residual Plot with ystar and xstar")
+
+# new box cox plot to check if the assumptions are met.
+boxcox(result.xstar_only, lambda = seq(-40, 40, 1))
+
+# ACF Plot
+acf(res4, main="ACF Plot of Residuals with ystar")
+
+# qq plot
+qqnorm(res4)
+qqline(res4, col="red")
+```

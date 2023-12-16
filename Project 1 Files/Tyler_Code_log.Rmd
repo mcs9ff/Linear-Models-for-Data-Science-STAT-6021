@@ -1,0 +1,217 @@
+---
+title: "Project 1"
+author: "Tyler Hinnendael"
+date: "2022-10-11"
+output: html_document
+---
+
+# Question 1
+
+-- to be filled out in the high-level report.
+
+# Question 2
+Prompt:
+a) A description of the data and the variables
+  -- created a variable "price per carat", to combine these two features so the visualizations 
+  take into account the 'weight' of the diamond size in the price.
+b) the data visualizations you created to address how price is related to the other variables
+  -- violin plot to show distribution of mean-price against each feature
+  -- bar chart with mean price trends for each category/sub-category
+  -- bar plot to show mean-price trends for each combination of the 3 categorical variables
+  -- could not do a correlation matrix because 3 of the variables are not numeric
+c) the claims made on the diamond education page. 
+  -- " Cut is considered the most important of the four C's. Color is the second most important of the 4Cs." 
+  -> Color appears to be the most consistent feature across all observations. Cut and clarity have some influential
+  observations and categories (flawless clarity). Cut does not appear to be the most important feature.
+d) Provide contextual commentary on the visualizations.
+
+```{r echo=FALSE}
+## reads in the diamonds4.csv file
+diamonds<-read.csv("diamonds4.csv", header=TRUE)
+```
+```{r echo=FALSE}
+# created 'price per carat" to normalize based on a wide range of carat weights
+vec<- (diamonds$price / diamonds$carat)
+diamonds["price_per_carat"]<-vec
+```
+```{r echo=FALSE}
+# created the log(price) column to transform the y-variable. 
+vec<- log(diamonds$price)
+diamonds["log_price"]<-vec
+```
+
+# (Question 2) - Univariate Analysis: Frequency Plots
+
+```{r echo=FALSE}
+# reorders these two columns in the diamonds data frame so it plots in descending order.
+diamonds$clarity<- factor(diamonds$clarity, levels=c("FL", "IF", "VVS1", "VVS2", "VS1", "VS2", "SI1", "SI2"))
+diamonds$cut<- factor(diamonds$cut, levels=c("Astor Ideal", "Ideal", "Very Good", "Good"))
+```
+
+```{r}
+print("min price: ")
+min(diamonds$price)
+print("max price: ")
+max(diamonds$price)
+print("mean price")
+mean(diamonds$price)
+median(diamonds$price)
+
+print("min carat weight: ")
+min(diamonds$carat)
+print("max carat weight: ")
+max(diamonds$carat)
+print("mean weight")
+mean(diamonds$carat)
+median(diamonds$carat)
+```
+
+
+```{r echo=FALSE}
+# Creates univariate plots for each of the 4 C's by counting the number of observations for each sub-category (grade)
+library(ggplot2)
+p1<-ggplot(diamonds, aes(carat)) + 
+  geom_histogram(binwidth = 0.5, fill = "#0073C2FF")+ 
+  ggtitle("Frequency of Diamond Weights in Carats")+
+  xlab("Diamond Weight (carat)") + ylab("Count")+ theme(plot.title = element_text(size=11))
+
+p2<-ggplot(diamonds, aes(cut)) + 
+  geom_bar(fill = "#0073C2FF") + 
+  ggtitle("Frequency of Diamond Cut Grades")+
+  xlab("Cut (grades)") + ylab("Count")+ theme(plot.title = element_text(size=11))
+
+p3<-ggplot(diamonds, aes(color)) + 
+  geom_bar(fill = "#0073C2FF") + 
+  ggtitle("Frequency of Diamond Color Grades")+
+  xlab("Color (grades)") + ylab("Count")+ theme(plot.title = element_text(size=11))
+
+p4<-ggplot(diamonds, aes(clarity)) + 
+  geom_bar(fill = "#0073C2FF") + 
+  ggtitle("Frequency of Diamond Clarity Grades")+
+  xlab("Clarity (grades)") + ylab("Count")+ theme(plot.title = element_text(size=11))
+```
+```{r echo=FALSE}
+# Outputs the Univariate Plots
+library(patchwork)
+p1 + p2 + p3 + p4 + plot_layout(ncol = 2)
+```
+
+# (Question 2) - Univariate Analysis: Frequency Tables 
+
+```{r echo=FALSE}
+# Creates frequency tables for Cut, Color, and Clarity
+freq_cut<-table(diamonds$cut)
+freq_color<-table(diamonds$color)
+freq_clarity<-table(diamonds$clarity)
+
+# Prints the Cut frequency table
+order_ind<-c("Astor Ideal", "Ideal", "Very Good", "Good")
+print("Frequency Table for Grades of Diamond Cut")
+freq_cut[order_ind]
+```
+```{r echo=FALSE}
+# Prints the Color frequency table
+print("Frequency Table for Grades of Diamond Color")
+print(freq_color)
+```
+```{r echo=FALSE}
+# Prints the Clarity frequency table
+order_ind<-c("FL", "IF", "VVS1", "VVS2", "VS1", "VS2", "SI1", "SI2")
+print("Frequency Table for Grades of Diamond Clarity")
+freq_clarity[order_ind]
+```
+
+
+# (Question 2) - Bivariate Analysis: Bar charts of mean(log(price)) for each cut, color, and clarity grade. Scatterplot of Price and Carat sizes.
+
+```{r echo=FALSE}
+library(ggplot2)
+
+# This code block creates a dataframe for cut, color and clarity. The mean(log(price)) is calculated for each grade of cut, color and clarity.
+# These data frames are used for the bivariate plots of Price against each of the C's. 
+cut_mean<-aggregate(diamonds$log_price, list(diamonds$cut), FUN=mean)
+cols <- c("Cut", "Mean_log_Price")
+colnames(cut_mean) <- cols
+cut_mean$Cut<- factor(cut_mean$Cut, levels=c("Astor Ideal", "Ideal", "Very Good", "Good"))
+
+color_mean<-aggregate(diamonds$log_price, list(diamonds$color), FUN=mean)
+cols <- c("Color", "Mean_log_Price")
+colnames(color_mean) <- cols
+
+clarity_mean<-aggregate(diamonds$log_price, list(diamonds$clarity), FUN=mean)
+cols <- c("Clarity", "Mean_log_Price")
+colnames(clarity_mean) <- cols
+clarity_mean$Clarity<- factor(clarity_mean$Clarity, levels=c("FL", "IF", "VVS1", "VVS2", "VS1", "VS2", "SI1", "SI2"))
+```
+
+```{r echo=FALSE}
+# Creates a bivariate plot for each of the 4 C's
+g1<-ggplot(diamonds, aes(x=carat, y=price))+
+  geom_point()+
+  labs(x="Weight of the diamond (carats)", y="price ($)",
+       title="Scatterplot of Price against Carats") + theme(plot.title = element_text(size=11))
+
+g2<-ggplot(cut_mean, aes(x=Cut, y=Mean_log_Price)) + geom_bar(stat = "identity", fill = "coral", alpha = 0.5) + 
+  ggtitle("Mean log(Price) for Diamond Cut Grades") +
+  xlab("Cut (grade)") + ylab("Mean Log Price ($)") + theme(plot.title = element_text(size=11))
+
+g3<-ggplot(color_mean, aes(x=Color, y=Mean_log_Price)) + geom_bar(stat = "identity", fill = "coral", alpha = 0.5) + 
+  ggtitle("Mean log(Price) for Diamond Color Grades") +
+  xlab("Color (grade)") + ylab("Mean Log Price ($)")+ theme(plot.title = element_text(size=11))
+
+g4<-ggplot(clarity_mean, aes(x=Clarity, y=Mean_log_Price)) + geom_bar(stat = "identity", fill = "coral", alpha = 0.5) + 
+  ggtitle("Mean log(Price) for Diamond Clarity Grades") +
+  xlab("Clarity (grade)") + ylab("Mean Log Price ($)")+ theme(plot.title = element_text(size=11))
+```
+
+```{r echo=FALSE}
+# Outputs the four bivariate plots.
+library(patchwork)
+g1 + g2 + g3 + g4 + plot_layout(ncol = 2)
+```
+
+```{r echo=FALSE}
+# Outputs the distribution of log(Price) values for each Diamond Color Grade
+ggplot(diamonds, aes(x=color, y=log_price, fill=color)) +
+  geom_violin() +
+  geom_jitter(width=0.1, alpha=0.5) +
+  scale_fill_brewer(palette="Blues", direction=-1)+ 
+  ggtitle("Log(Price) Distribution for Each Grade of Diamond Color")+
+  xlab("Color (grade)") + ylab("Log(Price) ($)")
+```
+
+# (Question 2) - Multivariate Plots: ggplots showing trends in mean-price per carat with combinations of the 3 categorical C's
+
+```{r echo=FALSE}
+library(MASS)
+library(reshape)
+library(reshape2)
+
+# A new dataframe 'varmeans' is created to represent the 'mean price_per_carat' for all cut/color/clarity combinations of the diamonds.
+# This dataframe is used for the multivariate plots.
+var_means<-aggregate(diamonds$price_per_carat, list(diamonds$cut, diamonds$color, diamonds$clarity), FUN=mean)
+cols <- c("Cut", "Color", "Clarity", "Mean_Price_Per_Carat")
+colnames(var_means) <- cols
+var_means$Clarity<- factor(var_means$Clarity, levels=c("FL", "IF", "VVS1", "VVS2", "VS1", "VS2", "SI1", "SI2"))
+var_means$Cut<- factor(var_means$Cut, levels=c("Astor Ideal", "Ideal", "Very Good", "Good"))
+```
+
+```{r echo=FALSE}
+# Outputs comparisons of Color and Cut combinations
+p<-ggplot(var_means, aes(x=Color, y=Mean_Price_Per_Carat, fill=Cut)) +
+  geom_bar(position="dodge", stat = "identity") +
+  scale_fill_brewer(palette = 7, direction = -1) +
+  scale_colour_brewer(palette = 1)
+p+theme_dark() + ggtitle("Mean Price-per-Carat for Grade Combinations of Diamond Color and Cut") +
+  xlab("Color (grade)") + ylab("Mean Price-per-Carat ($)")
+```
+```{r echo=FALSE}
+# Outputs comparisons of Color and Clarity combinations
+p<-ggplot(var_means, aes(x=Color, y=Mean_Price_Per_Carat, fill=Clarity)) +
+  geom_bar(position="dodge", stat = "identity") +
+  scale_fill_brewer(palette = 7, direction = -1) +
+  scale_colour_brewer(palette = 1)
+p+theme_dark() + ggtitle("Mean Price-per-Carat for Grade Combinations of Diamond Color and Clarity") +
+  xlab("Color (grade)") + ylab("Mean Price-per-Carat ($)")
+```
+
