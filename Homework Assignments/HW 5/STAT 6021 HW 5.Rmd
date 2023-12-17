@@ -1,0 +1,80 @@
+---
+title: "hw05"
+output: html_notebook
+---
+
+# Part 1
+
+```{r}
+library(tidyverse)
+copier = read.table("copier.txt", header = TRUE)
+```
+
+# 1A
+
+#create scatter plot
+```{r}
+#create scatter plot
+ggplot(copier, aes(x=Minutes,y=Serviced))+
+geom_point()+
+labs(x="Total Minutes Spent on the Phone",
+y="# of Copiers Serviced",
+title="Routine Maintenance Service Calls")
+```
+
+```{r}
+copierlm<-lm(Minutes~Serviced, data=copier)
+summary(copierlm)
+```
+# 1B
+
+Correlation between time and copiers serviced:
+```{r}
+cor(copier$Minutes, copier$Serviced)
+```
+
+Context: This value indicates a very strong positive linear
+association between # of copiers serviced and time spent by the person servicing them.
+
+# 1C
+
+Is the interpretation reliable: The scatter plot above shows a reasonable linear relationship, which would indicate that the interpretation that the correlation is strong is reliable. 
+
+# 1D
+
+```{r}
+confint(copierlm, level=0.95)
+```
+
+
+# 1E
+
+```{r}
+copierlm<-lm(Minutes~Serviced, data=copier)
+summary(copierlm)
+new.data<-data.frame(y=5)
+predict(copierlm,newdata=new.data,interval='confidence')
+```
+
+Could not get code to function. The lower/upper/best fit intervals will likely be close in range.
+
+# 1F
+
+Value of the residuals for the first observation:
+
+Min       1Q   Median       3Q      Max 
+-22.7723  -3.7371   0.3334   6.3334  15.4039 
+
+Since the median residual is not too high or too low, this seems to make sense contextually since we have a well-fit line in our plots and caccording to our other statistical measures. Our predicted value seems to be fairly accurate accoridng to the residuals.
+
+# 1G
+
+The average of the residuals is equal to zero. The sum of the residuals is also equal to zero. This make sense because the average of the residuals is equal to the sum of the residuals divided by the number of "n". Since the sum is zero, 0 divided by n (n/0) is also equal to 0.
+
+# Part 2
+
+See pictures attached.
+
+# Part 3
+
+See pictures attached.
