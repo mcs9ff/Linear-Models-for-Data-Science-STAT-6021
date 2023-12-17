@@ -1,0 +1,139 @@
+---
+title: "Module 1 HW"
+author: "Matt Scheffel"
+date: "2022-09-05"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+#Worked with Dora Eskridge
+
+```{r}
+UScovid<-read.csv("UScovid.csv", header=TRUE)
+```
+
+```{r}
+library("tidyverse")
+library("scales")
+```
+
+
+# Question 1 
+
+# 1A
+
+```{r}
+latest<-UScovid[which(UScovid$date=="2021-06-03"),]
+latest<-latest[,c(0,2,3,5,6)]
+latest<-latest[order(latest$county,latest$state),]
+
+head(latest, n=6L)
+```
+
+# 1B
+
+```{r}
+death.rate<-latest$deaths/latest$cases
+death.rate<-percent(death.rate, accuracy=.01)
+latest<-data.frame(latest,death.rate)
+latest<-latest[,c(1,2,3,4,5)]
+head(latest, n=6L)
+```
+
+# 1C
+
+```{r}
+top10cases<-latest[with(latest,order(-cases)),]
+head(top10cases, n=10L)
+```
+
+# 1D
+
+```{r}
+top10deaths<-latest[with(latest,order(-deaths)),]
+head(top10deaths, n=10L)
+```
+
+# 1E
+
+```{r}
+top10deathrates<-latest[with(latest,order(death.rate)),]
+top10deathrates<-na.omit(top10deathrates)
+top10deathrates<-filter(top10deathrates, county!="Unknown")
+tail(top10deathrates,n=10L)
+```
+
+These counties all appear to have relatively low total number of cases and deaths.
+
+# 1F
+
+```{r}
+hundredkdeaths<-latest[which(latest$cases>99999),]
+hundredkdeaths<-hundredkdeaths[with(hundredkdeaths,order(death.rate)),]
+hundredkdeaths<-na.omit(hundredkdeaths)
+tail(hundredkdeaths,n=10L)
+```
+
+# 1G
+
+```{r}
+CvilleData<-latest[which(latest$county=="Albemarle" | latest$county=="Charlottesville city"),]
+head(CvilleData, n=2L)
+```
+
+# Question 2
+
+# 2A
+
+```{r}
+state.level<-UScovid[which(UScovid$date=="2021-06-03"),]
+state.level<-state.level[,c(3,5,6)]
+state.level<-state.level[order(state.level$state),]
+state.level<-state.level%>%
+  group_by(state)%>%
+  summarize(state_total_cases=sum(cases), state_total_deaths=sum(deaths))
+head(state.level, n=6L)
+```
+
+# 2B
+
+```{r}
+state.rate<-state.level$state_total_deaths/state.level$state_total_cases
+state.rate<-percent(state.rate, accuracy=.01)
+state.level<-data.frame(state.level,state.rate)
+head(state.level, n=6L)
+```
+
+# 2C
+
+The Virginia death rate is 1.66%.
+
+# 2D
+
+The Puerto Rico death rate is N/A due to missing data.
+
+# 2E
+
+These states have the 10 highest death rates:
+
+```{r}
+top10staterates<-state.level[with(state.level,order(state.rate)),]
+tail(top10staterates,n=11L)
+```
+
+# 2F
+
+These states have the 10 lowest death rates:
+
+```{r}
+low10staterates<-state.level[with(state.level,order(state.rate)),]
+head(low10staterates,n=10L)
+```
+
+```{r}
+write.csv(state.level,"stateCovid.csv",row.names=TRUE)
+```
+
+
+# Fin
