@@ -1,0 +1,126 @@
+---
+title: "HW Module 5"
+author: "Matt Scheffel"
+date: "2022-09-30"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r}
+library(tidyverse)
+library(MASS)
+library(faraway)
+
+Data<-cornnit
+
+```
+
+# 1A
+
+The response variable is the Corn Yield.
+
+The predictor is the Nitrogen Fertilizer.
+
+```{r}
+ggplot(Data, aes(x=yield,y=nitrogen))+
+geom_point()+
+geom_smooth(method = "lm", se=FALSE)+
+labs(x="Corn Yield (Bushels per Acre)", y="Nitrogen (Pounds per Acre)",
+title="Corn Yield and Nitrogen Fertilizer")
+```
+The scatterplot seems to indicate that there may be a linear relationship, but there are still some significant outliers. Assumptins 1 and 2 may not be met.
+
+# 1 B
+
+```{r}
+result<-lm(yield~nitrogen, data=Data)
+Data$yhat<-result$fitted.values
+Data$res<-result$residuals
+ggplot(Data, aes(x=yhat,y=res))+
+geom_point()+
+geom_hline(yintercept=0, color="red")+
+labs(x="Fitted y", y="Residuals", title="Residual Plot")
+```
+I will consider transforming the predictor first since I am unsure about the linear relationship of the variables.
+
+
+# 1C
+
+```{r}
+bc = boxcox(result, lambda=seq(0,5))
+
+best.lam = bc$x[which(bc$y==max(bc$y))]
+```
+
+The BoxCox plot helps me determine that I will need to transform the response variable. Variance is likely not constant. 
+
+# 1D
+
+```{r}
+##log transform y
+Data$log.yield<-log(Data$yield)
+
+##scatter plot of y* against x
+ggplot(Data, aes(x=nitrogen,y=log.yield))+
+geom_point()+
+geom_smooth(method = "lm", se=FALSE)+
+labs(x="Nitrogen Log (Pounds per Acre)", y="Corn Yield (Bushels per Acre)",
+title="Corn Yield and Nitrogen Fertilizer")
+```
+
+Relationship is more linear but there are still many outliers.
+
+```{r}
+result2<-lm(Data$log.yield~Data$nitrogen, data=Data)
+##create residual plot
+Data$yhat2<-result2$fitted.values
+Data$res2<-result2$residuals
+ggplot(Data, aes(x=yhat2,y=res2))+
+geom_point()+
+geom_hline(yintercept=0, color="red")+
+labs(x="Fitted y", y="Residuals", title="Residual Plot (with y*)")
+```
+Residual plot is still fairly unchanged, suggesting the need for another transformation of the predictor variable.
+
+
+```{r}
+##transform x
+Data$log.nitrogen<-log(Data$nitrogen)
+##scatterplot of y* against x*
+ggplot(Data, aes(x=log.nitrogen,y=log.yield))+
+geom_point()+
+geom_smooth(method = "lm", se=FALSE)+
+labs(x="log Corn Yield", y="log Nitrogen",
+title="Corn Yield (log) and Nitrogen Fertilizer (log)")
+```
+
+This latest transformation displays a strong linear relationship and indicates we liely need no more transformations.
+
+
+```{r}
+summary(result2)
+```
+
+Regression equation:
+
+y = 4.6388 + 0.0016x
+
+```{r}
+#trying to remove NA values
+
+#Data[is.na(Data) | Data=="Inf"] = NA
+
+#result3<-lm(Data$log.yield~Data$log.nitrogen, data=Data)
+##create residual plot
+#yhat3<-result3$fitted.values
+#res3<-result3$residuals
+#ggplot(Data, aes(x=yhat3,y=res3))+
+#geom_point()+
+#geom_hline(yintercept=0, color="red")+
+#labs(x="Fitted y", y="Residuals", title="Residual Plot (with y* and x*)")
+```
+
+
+
+
