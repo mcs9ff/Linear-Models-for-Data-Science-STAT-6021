@@ -1,0 +1,96 @@
+---
+title: "Mod 09 HW"
+author: "Matt Scheffel"
+date: "2022-11-07"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r}
+library(MASS)
+data(birthwt)
+head(birthwt)
+?birthwt
+```
+# 1A
+
+The categorical variables in this data set are "low", "race", "smoke", "ht," & "ui".
+
+```{r}
+birthwt$low = factor(birthwt$low)
+birthwt$race = factor(ifelse(birthwt$race == 1, "white", 
+                             ifelse(birthwt$race == 2, "black", "other")))
+birthwt$smoke = factor(birthwt$smoke)
+birthwt$ht = factor(birthwt$ht)
+birthwt$ui = factor(birthwt$ui)
+```
+
+
+# 1B
+
+Yes, "low" should be dropped as a predictor. Since we are trying to predict the birth weight of the babies, having a variable which already tells us that the baby's birth weight is low does not make sense.
+
+# 1C
+```{r}
+#install.packages("leaps")
+library(leaps)
+allreg <- regsubsets(bwt ~., data=birthwt, nbest=2)
+summary(allreg)
+
+```
+
+# i. 
+
+```{r}
+coef(allreg, which.max(summary(allreg)$adjr2))
+```
+
+Predictors: low1, age, lwt, racewhite
+
+# ii.
+
+```{r}
+coef(allreg, which.min(summary(allreg)$cp))
+```
+
+Predictors: low1, racewhite, smoke1, ui1
+
+# iii.
+
+```{r}
+coef(allreg, which.min(summary(allreg)$bic))
+```
+
+Predictors: low1, ui1
+
+For all of these, we could have dropped the "low" predictor as discussed earlier and it would not be counted for each model. The following code could be used:
+
+birthwt = subset(birthwt, select = -c(low))
+
+# 1D
+
+```{r}
+regnull <- lm(bwt~1, data=birthwt)
+
+regfull <- lm(bwt~., data=birthwt)
+step(regnull, scope=list(lower=regnull, upper=regfull), direction="forward")
+
+step(regfull, scope=list(lower=regnull, upper=regfull), direction="backward")
+```
+
+The regression equation selected using backwards selection is the last one, with the lowest AIC of 2299.75:
+
+Step:  AIC=2299.75
+bwt ~ low + race + smoke + ui
+
+# 4
+
+PRESS Statistic:
+
+```{r}
+press <- function(regmodel) {
+sum((regmodel$residuals) / (1-lm.influence(regmodel)$hat))**2
+}
+```
+
