@@ -1,0 +1,59 @@
+---
+title: "hw08"
+author: "Matt Scheffel"
+date: "2022-10-24"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+# Matt Scheffel
+# mcs9ff
+# Module 7 HW
+
+# 1A
+
+```{r}
+library(datasets)
+data(swiss)
+head(swiss)
+?swiss
+```
+
+```{r}
+data<-swiss
+y<-data$Fertility
+x1<-data$Education
+x2<-data$Catholic
+x3<-data$Infant.Mortality
+x4<-data$Agriculture
+x5<-data$Examination
+
+FertilityMLR2<-lm(y~x1+x2+x3)
+summary(FertilityMLR2)
+```
+
+# 1B
+
+```{r}
+plot(FertilityMLR2$residuals)
+qqnorm(FertilityMLR2$residuals)
+qqline(FertilityMLR2$residuals)
+```
+
+```{r}
+round(1-pf(1.7814,3,107),4)
+```
+
+```{r}
+round(qf(0.95,3,107),4)
+```
+
+```{r}
+round(1-pf(2.658,2,107),4)
+```
+
+```{r}
+round(qf(0.95,2,107),4)
+```
+
