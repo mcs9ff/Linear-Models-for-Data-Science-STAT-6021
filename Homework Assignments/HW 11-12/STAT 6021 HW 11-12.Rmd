@@ -1,0 +1,179 @@
+---
+title: "HW 11 & 12"
+author: "Matt Scheffel"
+date: "2022-12-05"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r}
+library(tidyverse)
+library(ROCR)
+library(faraway)
+library(palmerpenguins)
+#install.packages("gridExtra")
+library(gridExtra)
+library(ggplot2)
+
+Data<-penguins
+##remove penguins with gender missing
+Data<-Data[complete.cases(Data[ , 7]),-c(2,8)]
+##80-20 split
+set.seed(1)
+sample<-sample.int(nrow(Data), floor(.80*nrow(Data)), replace = F)
+train<-Data[sample, ]
+test<-Data[-sample, ]
+```
+
+# 1A
+
+```{r}
+boxplot_pen <- function(Data, x, y) {
+  return(ggplot(Data, aes_string(x=x, y=y)) +
+    geom_boxplot() + 
+    labs(x=x, y=y, title=paste(y, "by", x)))
+}
+density_pen <- function(Data, class, field) {
+  return(ggplot(Data, aes_string(x=field, color=class)) + 
+    geom_density() + 
+    labs(title=paste("Density Plot of", field, "by", "class")))
+}
+box1 <- boxplot_pen(train, "sex", "bill_length_mm")
+dens1 <- density_pen(train, "sex", "bill_length_mm")
+box2 <- boxplot_pen(train, "sex", "bill_depth_mm")
+dens2 <- density_pen(train, "sex", "bill_depth_mm")
+box3 <- boxplot_pen(train, "sex", "flipper_length_mm")
+dens3 <- density_pen(train, "sex", "flipper_length_mm")
+box4 <- boxplot_pen(train, "sex", "body_mass_g")
+dens4 <- density_pen(train, "sex", "body_mass_g")
+grid.arrange(box1,dens1,box2,dens2,box3,dens3,box4,dens4, ncol = 2, nrow = 4)
+```
+Comments:
+
+From our visualizations, we can see that males have higher body measurements values and medians for each variable. The density plots for males are also shifted further right, indicating their higher values.
+
+# 1B
+
+```{r}
+regression1<-glm(sex ~ ., family="binomial", data=train)
+summary(regression1)
+```
+
+From the Z- and p-values, we can see that Flipper Length is not significant and can be dropped. (P > 0.05)
+
+# 1C
+
+```{r}
+regression2<-glm(sex ~ . - flipper_length_mm, family="binomial", data=train)
+summary(regression2)
+```
+Regression equation:
+
+$$
+log\left(\frac{\hat{\pi}}{1-\hat{\pi}}\right) = -103.2 -10.42I_1 -12.38I_2 + 0.09513\text{bill\\\_length\\\_mm} + 2.099 \text{bill\\\_depth\\\_mm} + 0.007714 \text{body\\\_mass\\\_g}
+$$
+
+$I_1 = 1$ for Chinstrap penguins and $I_2 = 1$ for Gentoo penguins. Both of these values are zero for Adelie penguins.
+
+# 1D
+
+Holding the penguin species constant, the data shows all body measurement coefficients have a positive value. This demonstrates that with these body measurements, the (log) odds of a penguin being a male will increase as the body measurements of the penguin increase. 
+
+# 1E
+
+The coefficient for bill length is 0.09513. Contextually, this means that on average for a bill length increase, the estimated (log) odds of a penguin being male increases by 0.09513, while  other variables (bill depth, flipper length, body mass) are held constant.
+
+# 1F
+
+```{r}
+data2 <- data.frame(bill_length_mm=49, bill_depth_mm=15, flipper_length_mm=220, body_mass_g=5700, species="Gentoo")
+
+print(predict(regression2, data2))
+
+odds2<-exp(predict(regression2,data2))
+print(odds2)
+
+maleprob<-odds2/(1+odds2)
+print(maleprob)
+```
+Log Odds: 
+
+1 
+6.462668 
+
+Odds:
+
+ 1 
+640.7683 
+
+Probability: 
+
+ 1 
+0.9984418
+
+# 1G
+
+$H_0 : \beta_1 = ... = \beta_5 = 0$
+
+$H_A: \text{one or more of the cofficients in } H_0 \text{ is a non-zero}$
+
+$\Delta G^2$:
+
+```{r}
+changeg2 <- regression2$null.deviance - regression2$deviance
+changeg2
+
+1 - pchisq(changeg2, 5)
+```
+
+Test-statistic = 298.4472. P-value = 0.
+
+Conclusion: Thus, we reject the null hypothesis. This logistic regression in part 1C proves to be useful in comparison to the intercept-only model. 
+
+# 1H
+
+```{r}
+
+pred1<-predict(regression2,newdata=test, type="response")
+
+rates<-prediction(pred1, test$sex)
+
+roc_result<-performance(rates,measure="tpr", x.measure="fpr")
+plot(roc_result, main="ROC Curve - Penguins")
+lines(x = c(0,1), y = c(0,1), col="blue")
+```
+
+The ROC Curve is above the line and shows us that the regression model is better than a random guess.
+
+# 1I
+
+```{r}
+AUC<-performance(rates, measure = "auc")
+AUC@y.values
+```
+
+The AUC of the ROC curve is 0.9214286. This also indicates that the regression model performs better than a random guess.
+
+# 1J
+
+```{r}
+table(test$sex, pred1>0.5)
+```
+
+False positive rate = 7/35 = 0.2
+
+False negative rate = 4/32 = 0.125
+
+Error rate = 1 - accuracy = 1 - 56/67 = 0.1641791
+
+# 1K
+
+```{r}
+test<-data.frame(test,pred1)
+ggplot(test,aes(x=pred1))+
+  geom_density()+
+  labs(title="Density Plot of Probabilities")
+```
+
+Based upon the results of the density plot, there does not seem to be a significant difference in the prediction probabilities. Thus, the current threshold appears to be adequate and does not need to be changed.
