@@ -1,0 +1,90 @@
+---
+title: "M03 Homework"
+author: "Matt Scheffel"
+date: "2022-09-19"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+# Part 1
+
+```{r}
+library(tidyverse)
+copier = read.table("copier.txt", header = TRUE)
+```
+
+
+# 1A
+
+The response variable in this analysis is the number of minutes spent on the phone. The predictor in this analysis is the number of copiers serviced.
+
+# 1B
+
+```{r}
+#create scatter plot
+ggplot(copier, aes(x=Minutes,y=Serviced))+
+geom_point()+
+labs(x="Total Minutes Spent on the Phone",
+y="# of Copiers Serviced",
+title="Routine Maintenance Service Calls")
+```
+
+The relationship between the 2 variables (the number of copiers serviced and the time spent by the service person) seems to be a strong positive linear relationship. The more copiers a person services, the more time they spend on the phone.
+
+# 1C
+
+```{r}
+copierlm<-lm(Minutes~Serviced, data=copier)
+summary(copierlm)
+```
+
+B^1 is = 15.0352. It is found under the Serviced Estimate.
+B^0 is = -0.5802. It is found under the (Intercept) Estimate.
+R^2 is = 0.9565. It is found in the section where it reads "R-squared." I used the Adjusted R-squared.
+o^2 is = (8.914)^2. It is square of the residual std. error. 
+
+# 1D
+
+Contextual interpretation: B0 does not make sense, as a negative value would indicate that a person has negative amount of calls. The minimum should be 0.
+
+# 1E
+
+```{r}
+anova.copier<-anova(copierlm)
+anova.copier
+```
+
+F-statistic: 968.66
+
+Null and alternative hypotheses: H0 : B1 = 0; Ha : B1 /= 0
+
+Relevant conclusion: The p-value is less than 0.05 so we reject the null hypothesis. The data supports the hypothesis that there is a linear relationship between number of machines serviced and minutes spent on the phone.
+
+# Part 2
+
+# 2A
+
+See picture attached.
+
+# 2B
+
+See picture attached.
+
+# 2C
+
+Variance is = 38
+
+# 2D
+
+R^2 = 0.9733
+
+# 2E
+
+F0 = 145.6
+
+Relevant conclusion: The p-value is less than 0.05 so we reject the null hypothesis.
+
+# Part 3
+
+See picture attached.
