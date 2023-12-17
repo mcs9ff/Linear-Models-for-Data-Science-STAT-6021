@@ -1,0 +1,48 @@
+---
+title: "HW 07"
+author: "Matt Scheffel"
+date: "2022-10-17"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+# Matt Scheffel
+# mcs9ff
+# Module 7 HW
+
+
+```{r}
+library(datasets)
+data(swiss)
+head(swiss)
+?swiss
+```
+# 1A
+
+```{r}
+pairs(swiss, lower.panel = NULL, main="Scatterplot of All Variables")
+```
+
+i. The Examination and Education predictors appear to be linearly related to the Fertility measure. (Perhaps an argument could be made for Agriculture.)
+
+ii. Yes, some of the predictors appear to be highly correlated with one another:
+
+Examinations and Education,
+Examinations and Agriculture,
+Agriculture and Education
+
+# 1B
+
+```{r}
+fertilityMLR<-lm(swiss$Fertility~swiss$Agriculture+swiss$Examination+swiss$Education+swiss$Catholic+swiss$Infant.Mortality)
+
+summary(fertilityMLR)
+```
+
+i. The ANOVA F-statistic is testing if at least one of the coefficients from the regression slopes differ from 0 (or do not), i.e. do they = 0? In context, the relevant conclusion is that the F-test (=19.76) and p-value (5.59*10^-10) < 0.05, so we reject the null hypothesis. This means the overall model is significant.
+
+ii. The p-value does not agree with the answer to 1A in regards to the Exam variable. It does agree with the answer regarding the Education variable. The p-value and slope does not agree with the answers to part 2 of 1A (Examinations and Education, Examinations and Agriculture, Agriculture and Education). 
+
+There is likely a strong presence of multicollinearity in the regressor variables, causing the model fit to be unreliable.
+
