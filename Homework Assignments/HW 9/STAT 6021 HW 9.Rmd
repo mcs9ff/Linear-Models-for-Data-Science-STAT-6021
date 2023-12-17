@@ -1,0 +1,54 @@
+---
+title: "HW 09"
+author: "Matt Scheffel"
+date: "2022-10-31"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r}
+library(MASS)
+data(birthwt)
+head(birthwt)
+```
+
+# 1A
+
+```{r}
+df <- MASS::birthwt
+df$race <- as.factor(df$race)
+df$race <- as.factor(birthwt$race)
+
+library(ggplot2)
+
+ggplot(df, aes(x=age,y=bwt, color=race))+
+geom_point()+
+#scale_size(range = c(0.1,12))+
+geom_smooth(method=lm, fill=NA)
+labs(x="Age",
+y="Birth Weight",
+title="Birthweight Against Age",
+addRegLine=TRUE, regLineColor="blue")
+```
+
+Interaction effect:
+
+The regression lines for age and birth weight are not parallel and they intersect with each other. This visual shows us that there is a significant interaction effect between age and race.
+
+# 1B
+
+```{r}
+MLRbwt <- lm(bwt~age*race, data = df)
+summary(MLRbwt)
+```
+
+Regression equation:
+
+bwt = 2583.54 + 21.37(age) + 1022.79(race2) + 326.05(race3) - 62.54(age:race2) - 26.03(age:race3)
+
+Race 1 is the reference level. For a one unit increase in age, the weight increases by 21.37 units.
+
+Race 2 (vs. Race 1) shows that for a one unit increase in age, the weight decreases by 41.17 units.
+
+Race 3 (vs. Race 1) shows that for a one unit increase in age, the weight decreases by 4.66 units.
